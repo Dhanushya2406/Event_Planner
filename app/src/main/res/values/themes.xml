@@ -1,0 +1,8 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.Dhanushya_EventPlanner_TaskiTechnologies" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorOnPrimary">#F76B10</item>
+    </style>
+
+    <style name="Theme.Dhanushya_EventPlanner_TaskiTechnologies" parent="Base.Theme.Dhanushya_EventPlanner_TaskiTechnologies" />
+</resources>
