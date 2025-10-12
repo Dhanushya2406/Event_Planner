@@ -31,6 +31,4 @@ interface EventDao {
     @Query("SELECT * FROM events WHERE date BETWEEN :startOfDay AND :endOfDay ORDER BY time ASC")
     fun getEventsByDate(startOfDay: Long, endOfDay: Long): Flow<List<Event>>
 
-
-
 }

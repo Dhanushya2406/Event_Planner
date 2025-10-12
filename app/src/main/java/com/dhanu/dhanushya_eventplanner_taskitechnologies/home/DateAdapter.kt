@@ -28,6 +28,7 @@ class DateAdapter(
     override fun onBindViewHolder(holder: DateViewHolder, position: Int) {
         val date = dates[position]
         holder.bind(date, position == selectedPosition)
+
         holder.itemView.setOnClickListener {
             val oldPos = selectedPosition
             selectedPosition = position
@@ -53,6 +54,7 @@ class DateAdapter(
             card.setCardBackgroundColor(if (isSelected) Color.parseColor("#FF9800") else Color.WHITE)
             tvDay.setTextColor(if (isSelected) Color.WHITE else Color.BLACK)
             tvMonth.setTextColor(if (isSelected) Color.WHITE else Color.DKGRAY)
+
         }
     }
 }

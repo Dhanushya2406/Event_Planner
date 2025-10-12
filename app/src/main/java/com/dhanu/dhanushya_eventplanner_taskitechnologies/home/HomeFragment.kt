@@ -1,20 +1,20 @@
 package com.dhanu.dhanushya_eventplanner_taskitechnologies.home
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dhanu.dhanushya_eventplanner_taskitechnologies.databinding.FragmentHomeBinding
 import com.dhanu.dhanushya_eventplanner_taskitechnologies.events.EventViewModel
 import com.dhanu.dhanushya_eventplanner_taskitechnologies.model.Event
-import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import java.util.Locale
 
 class HomeFragment : Fragment() {
 
@@ -22,17 +22,34 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var viewModel: EventViewModel
-    private lateinit var popularEventsAdapter: PopularEventsAdapter
     private lateinit var dateAdapter: DateAdapter
     private lateinit var eventAdapter: CalendarEventAdapter
 
     private var selectedDate: Date = Date()
 
+    private val searchHints = listOf(
+        "Search 'Birthday events'",
+        "Search 'Music shows'",
+        "Search 'Pet parties'",
+        "Search 'Wedding venues'",
+        "Search 'Corporate events'"
+    )
+
+    private var hintIndex = 0
+    private val hintHandler = Handler(Looper.getMainLooper())
+    private val hintRunnable = object : Runnable {
+        override fun run() {
+            binding.searchBar.hint = searchHints[hintIndex]
+            hintIndex = (hintIndex + 1) % searchHints.size
+            hintHandler.postDelayed(this, 5000)
+        }
+    }
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle? ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        viewModel = ViewModelProvider(this)[EventViewModel::class.java]
-        setupPopularEvents()
+        viewModel = ViewModelProvider(requireActivity())[EventViewModel::class.java]
+
         setupDateStrip()
         setupEventList()
 
@@ -42,48 +59,20 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        observeEventsForDate(selectedDate)
-    }
-
-    private fun setupPopularEvents() {
-        val dummyPopularEvents = listOf(
-            Event(
-                title = "Music Fest 2025",
-                description = "Bangalore",
-                date = System.currentTimeMillis(),
-                time = "6:00 PM"
-            ),
-            Event(
-                title = "Food Carnival",
-                description = "Hyderabad",
-                date = System.currentTimeMillis() + 86400000,
-                time = "12:00 PM"
-            ),
-            Event(
-                title = "Startup Expo",
-                description = "Chennai",
-                date = System.currentTimeMillis() + 2 * 86400000,
-                time = "9:30 AM"
-            ),
-            Event(
-                title = "Art & Culture Fair",
-                description = "Pune",
-                date = System.currentTimeMillis() + 3 * 86400000,
-                time = "11:00 AM"
-            )
-        )
-
-        popularEventsAdapter = PopularEventsAdapter(dummyPopularEvents)
-        binding.rvPopularEvents.layoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        binding.rvPopularEvents.adapter = popularEventsAdapter
+        viewModel.eventsForSelectedDate.observe(viewLifecycleOwner) { events ->
+            android.util.Log.d("EventDebug", "HomeFragment received ${events.size} events for $selectedDate")
+            events.forEach {
+                android.util.Log.d("EventDebug", "Event: ${it.title}, date=${it.date}, time=${it.time}")
+            }
+            updateEventList(events)
+        }
     }
 
     private fun setupDateStrip() {
         val dates = generateNextDays(30)
         dateAdapter = DateAdapter(dates) { selected ->
-            selectedDate = selected
-            observeEventsForDate(selectedDate)
+            selectedDate = normalizeDate(selected)
+            viewModel.setSelectedDate(selectedDate)
         }
         binding.rvDates.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.rvDates.adapter = dateAdapter
@@ -95,13 +84,10 @@ class HomeFragment : Fragment() {
         binding.rvCalendarEvents.adapter = eventAdapter
     }
 
-    private fun observeEventsForDate(date: Date) {
-        viewModel.getEventsByDate(date).observe(viewLifecycleOwner) { events ->
-            updateEventList(events)
-        }
-    }
-
     private fun updateEventList(events: List<Event>) {
+        Log.d("EventDebug", "updateEventList called with ${events.size} events")
+        events.forEach { Log.d("EventDebug", "Updating UI: ${it.title}, date=${it.date}") }
+
         if (events.isNotEmpty()) {
             eventAdapter.submitList(events)
             binding.rvCalendarEvents.visibility = View.VISIBLE
@@ -122,8 +108,30 @@ class HomeFragment : Fragment() {
         return list
     }
 
+    private fun normalizeDate(date: Date): Date {
+        val cal = Calendar.getInstance().apply {
+            time = date
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return cal.time
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.setSelectedDate(selectedDate)
+        hintHandler.post(hintRunnable)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        hintHandler.removeCallbacks(hintRunnable)
     }
 }

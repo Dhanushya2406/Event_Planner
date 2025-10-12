@@ -6,7 +6,10 @@ import kotlinx.coroutines.flow.Flow
 
 class EventRepository(private val eventDao: EventDao) {
 
-    suspend fun insertEvent(event: Event) = eventDao.insertEvents(event)
+    suspend fun insertEvent(event: Event) {
+        android.util.Log.d("EventDebug", "Inserting event: ${event.title}, date=${event.date}, time=${event.time}")
+        eventDao.insertEvents(event)
+    }
 
     suspend fun updateEvent(event: Event) = eventDao.updateEvent(event)
 
@@ -16,7 +19,8 @@ class EventRepository(private val eventDao: EventDao) {
 
     fun pastEvent(currentTime: Long) = eventDao.getPastEvents(currentTime)
 
-    fun getEventsByDate(startOfDay: Long, endOfDay: Long): Flow<List<Event>> {
-        return eventDao.getEventsByDate(startOfDay, endOfDay)
-    }
+    fun getEventsByDate(startOfDay: Long, endOfDay: Long) =
+        eventDao.getEventsByDate(startOfDay, endOfDay)
+
 }
+

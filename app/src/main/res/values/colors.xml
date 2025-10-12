@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="colorSelected">#F76B10</color>
     <color name="bottomNav_icon_grey">#4A4D55</color>
+    <color name="date_card_color">#EFC384</color>
 </resources>

@@ -3,6 +3,7 @@ package com.dhanu.dhanushya_eventplanner_taskitechnologies.events
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -54,7 +55,7 @@ class AddEventFragment : Fragment() {
             binding.editTextDate.setText(dateFormat.format(Date(dateInMillis)))
         }
 
-        viewModel = ViewModelProvider(this)[EventViewModel::class.java]
+        viewModel = ViewModelProvider(requireActivity())[EventViewModel::class.java]
 
         binding.editTextDate.setOnClickListener { setupDatePicker() }
         binding.editTextTime.setOnClickListener { setupTimePicker() }
@@ -102,7 +103,7 @@ class AddEventFragment : Fragment() {
         val title = binding.editTextTitle.text.toString().trim()
         val description = binding.editTextDescription.text.toString().trim()
         val date = binding.editTextDate.text.toString().trim()
-        val time = binding.editTextTime.text.toString().trim()
+        var time = binding.editTextTime.text.toString().trim()
 
         if (title.isEmpty() || date.isEmpty() || time.isEmpty()){
             Toast.makeText(requireContext(), "Please fill all required fields", Toast.LENGTH_SHORT).show()
@@ -110,14 +111,23 @@ class AddEventFragment : Fragment() {
         }
 
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        val dateInMillis = dateFormat.parse(date)?.time ?: System.currentTimeMillis()
+        val selectedDate = dateFormat.parse(date)
 
-        // Create Event object
+        val calendar = Calendar.getInstance()
+        calendar.time = selectedDate ?: Date()
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val normalizedDateInMillis = calendar.timeInMillis
+
+        Log.d("EventDebug", "Normalized Date millis: $normalizedDateInMillis")
+
         val event = Event(
             id = if (isEditMode) eventId else 0,
             title = title,
             description = description,
-            date = dateInMillis,
+            date = normalizedDateInMillis, // use normalized date
             time = time
         )
 

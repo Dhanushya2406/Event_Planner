@@ -1,9 +1,13 @@
 package com.dhanu.dhanushya_eventplanner_taskitechnologies.events
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.asLiveData
+import androidx.lifecycle.liveData
+import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import com.dhanu.dhanushya_eventplanner_taskitechnologies.model.Event
 import com.dhanu.dhanushya_eventplanner_taskitechnologies.model.room.AppDatabase
@@ -18,6 +22,25 @@ class EventViewModel(application: Application): AndroidViewModel(application) {
         val eventDao = AppDatabase.getDatabase(application).eventDao()
         repository = EventRepository(eventDao)
     }
+
+    private val _selectedDate = MutableLiveData<Date>(Date())
+
+    val eventsForSelectedDate: LiveData<List<Event>> =
+        _selectedDate.switchMap { date ->
+            val calStart = Calendar.getInstance().apply {
+                time = date
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val startOfDay = calStart.timeInMillis
+            val endOfDay = startOfDay + 86_400_000 - 1
+            Log.d("EventDebug", "Querying events for range: $startOfDay - $endOfDay")
+            repository.getEventsByDate(startOfDay, endOfDay).asLiveData()
+        }
+
+
 
     fun insertEvent(event: Event) = viewModelScope.launch {
         repository.insertEvent(event)
@@ -35,25 +58,8 @@ class EventViewModel(application: Application): AndroidViewModel(application) {
 
     fun getPastEvents(currentTime: Long) = repository.pastEvent(currentTime).asLiveData()
 
-    fun getEventsByDate(selectedDate: Date): LiveData<List<Event>> {
-        val cal = Calendar.getInstance()
-        cal.time = selectedDate
-
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
-        val startOfDay = cal.timeInMillis
-
-        // End of day
-        cal.set(Calendar.HOUR_OF_DAY, 23)
-        cal.set(Calendar.MINUTE, 59)
-        cal.set(Calendar.SECOND, 59)
-        cal.set(Calendar.MILLISECOND, 999)
-        val endOfDay = cal.timeInMillis
-
-        return repository.getEventsByDate(startOfDay, endOfDay).asLiveData()
+    fun setSelectedDate(date: Date) {
+        _selectedDate.value = date
     }
-
 
 }
