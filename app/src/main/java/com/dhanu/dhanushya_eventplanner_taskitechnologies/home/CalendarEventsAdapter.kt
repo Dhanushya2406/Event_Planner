@@ -16,8 +16,6 @@ import java.util.Locale
 
 class CalendarEventAdapter : ListAdapter<Event, CalendarEventAdapter.EventViewHolder>(DiffCallback) {
 
-    private var events: List<Event> = emptyList()
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val binding = ItemCalendarEventsBinding.inflate(inflater, parent, false)

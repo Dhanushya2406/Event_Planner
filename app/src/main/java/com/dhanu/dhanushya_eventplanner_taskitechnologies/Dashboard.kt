@@ -25,7 +25,6 @@ class Dashboard : AppCompatActivity() {
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize fragments only once
         if (savedInstanceState == null) {
             homeFragment = HomeFragment()
             eventFragment = EventFragment()
@@ -52,7 +51,6 @@ class Dashboard : AppCompatActivity() {
             }
         }
 
-        // BottomNavigationView listener
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.home -> switchFragment(homeFragment)

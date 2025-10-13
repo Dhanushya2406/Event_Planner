@@ -127,11 +127,10 @@ class AddEventFragment : Fragment() {
             id = if (isEditMode) eventId else 0,
             title = title,
             description = description,
-            date = normalizedDateInMillis, // use normalized date
+            date = normalizedDateInMillis,
             time = time
         )
 
-        // Insert or update in RoomDB
         if (isEditMode) {
             viewModel.updateEvent(event)
             Toast.makeText(requireContext(), "Event Updated", Toast.LENGTH_SHORT).show()
