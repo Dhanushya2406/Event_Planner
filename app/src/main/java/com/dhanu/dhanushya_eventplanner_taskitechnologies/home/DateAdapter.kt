@@ -45,16 +45,18 @@ class DateAdapter(
         private val tvDay = itemView.findViewById<TextView>(R.id.tvDay)
         private val tvMonth = itemView.findViewById<TextView>(R.id.tvMonth)
 
+
         fun bind(date: Date, isSelected: Boolean) {
             val dayFormat = SimpleDateFormat("dd", Locale.getDefault())
             val monthFormat = SimpleDateFormat("MMM", Locale.getDefault())
             tvDay.text = dayFormat.format(date)
             tvMonth.text = monthFormat.format(date)
 
-            card.setCardBackgroundColor(if (isSelected) Color.parseColor("#FF9800") else Color.WHITE)
-            tvDay.setTextColor(if (isSelected) Color.WHITE else Color.BLACK)
-            tvMonth.setTextColor(if (isSelected) Color.WHITE else Color.DKGRAY)
+            card.setCardBackgroundColor(if (isSelected) Color.DKGRAY else Color.parseColor("#EFC384"))
+            tvDay.setTextColor(if (isSelected) Color.parseColor("#EFC384") else Color.BLACK)
+            tvMonth.setTextColor(if (isSelected) Color.parseColor("#E2A16F") else Color.DKGRAY)
 
         }
+
     }
 }
